@@ -37,3 +37,8 @@ and access them using a master password.
 - Uses Firestore, but you will not have any access to Firestore in developing the app.
 - You will have to write Firestore functionality and ask me to test it.
 - You can write mock functions that mimic the firestore but store the data in localStorage to mimic Firestore calls
+
+# Deployment
+
+- GitHub Actions workflow to compile TypeScript and deploy to GitHub Pages
+- Automatic deployment on push to main branch
