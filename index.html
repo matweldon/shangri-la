@@ -7,6 +7,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <title>Shangri-la - Secure Secrets Manager</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Jasmine CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/jasmine.min.css">
 </head>
 <body>
   <!-- Header -->
@@ -35,6 +37,10 @@
         <div id="mock-firestore-warning" class="warning-box" style="display: none;">
           ⚠️ Using mock Firestore (localStorage-based). Real Firestore is not configured.
         </div>
+      </div>
+      <div class="settings-section">
+        <h3>Testing</h3>
+        <button id="run-tests-btn" class="btn btn-secondary">Run Tests</button>
       </div>
       <div class="settings-section">
         <button id="logout-btn" class="btn btn-secondary">Logout</button>
@@ -190,7 +196,27 @@
     </div>
   </div>
 
+  <!-- Test Runner View -->
+  <div id="test-runner-view" class="view">
+    <div class="container">
+      <h2>Unit Tests</h2>
+      <div class="button-group" style="margin-bottom: 20px;">
+        <button id="run-tests-action-btn" class="btn btn-primary">Run All Tests</button>
+        <button id="close-test-view" class="btn btn-secondary">Close</button>
+      </div>
+      <div id="jasmine-container"></div>
+    </div>
+  </div>
+
+  <!-- Jasmine Framework -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/jasmine.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/jasmine-html.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/boot0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/5.1.1/boot1.min.js"></script>
+
   <!-- Load compiled JavaScript (ES modules) -->
   <script type="module" src="dist/app.js"></script>
+  <!-- Load tests (only when test runner is active) -->
+  <script type="module" src="dist/tests.js"></script>
 </body>
 </html>
