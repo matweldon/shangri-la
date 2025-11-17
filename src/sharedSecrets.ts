@@ -6,6 +6,9 @@
 import { SharedSecret } from './types.js';
 import { encrypt, decrypt } from './crypto.js';
 
+// Firestore types (these would come from firebase/firestore in a real implementation)
+declare const firebase: any;
+
 /**
  * Storage interface for shared secrets
  * This is implemented by Firestore for online mode
