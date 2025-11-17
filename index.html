@@ -196,6 +196,137 @@
     </div>
   </div>
 
+  <!-- Share Secret View -->
+  <div id="share-secret-view" class="view">
+    <div class="container">
+      <h2>Share Secret</h2>
+      <p class="subtitle">Create a single-use link to share this secret</p>
+
+      <form id="share-secret-form" class="form">
+        <div class="form-group">
+          <label for="share-description">Description</label>
+          <input
+            type="text"
+            id="share-description"
+            name="share-description"
+            placeholder="What are you sharing?"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="share-secret-text">Secret</label>
+          <textarea
+            id="share-secret-text"
+            name="share-secret-text"
+            placeholder="Enter the secret to share"
+            rows="4"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="share-password">Password</label>
+          <input
+            type="password"
+            id="share-password"
+            name="share-password"
+            placeholder="Password to encrypt this secret"
+            autocomplete="new-password"
+            required
+          >
+          <p class="help-text">The recipient will need this password to view the secret.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="share-expiry">Expires After</label>
+          <select id="share-expiry" name="share-expiry" class="form-select">
+            <option value="1">1 hour</option>
+            <option value="6">6 hours</option>
+            <option value="24" selected>24 hours</option>
+            <option value="168">7 days</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="share-max-views">Maximum Views</label>
+          <select id="share-max-views" name="share-max-views" class="form-select">
+            <option value="1" selected>1 view (single-use)</option>
+            <option value="3">3 views</option>
+            <option value="10">10 views</option>
+          </select>
+        </div>
+
+        <div id="share-secret-error" class="error-message"></div>
+
+        <div class="button-group">
+          <button type="button" id="cancel-share-secret" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share Secret Result View -->
+  <div id="share-secret-result-view" class="view">
+    <div class="container">
+      <h2>Secret Link Created</h2>
+      <p class="subtitle">Share this link and password with the recipient</p>
+
+      <div class="secret-display">
+        <div class="form-group">
+          <label>Link</label>
+          <div class="link-display">
+            <input type="text" id="share-link" readonly class="link-input">
+            <button id="copy-link-btn" class="btn btn-secondary">Copy</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <div class="link-display">
+            <input type="text" id="share-link-password" readonly class="link-input">
+            <button id="copy-password-btn" class="btn btn-secondary">Copy</button>
+          </div>
+        </div>
+
+        <p class="warning-box">
+          ⚠️ Make sure to send the link and password separately (e.g., link via email, password via SMS).
+        </p>
+      </div>
+
+      <div class="button-group" style="grid-template-columns: 1fr;">
+        <button id="close-share-result" class="btn btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Shared Secret View -->
+  <div id="view-shared-secret-view" class="view">
+    <div class="container">
+      <h2>Retrieve Shared Secret</h2>
+      <p class="subtitle">Enter the password to view the secret</p>
+
+      <form id="view-shared-secret-form" class="form">
+        <div class="form-group">
+          <label for="shared-secret-password">Password</label>
+          <input
+            type="password"
+            id="shared-secret-password"
+            name="shared-secret-password"
+            placeholder="Enter the password"
+            autocomplete="off"
+            required
+          >
+        </div>
+
+        <div id="view-shared-secret-error" class="error-message"></div>
+
+        <button type="submit" class="btn btn-primary">View Secret</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Test Runner View -->
   <div id="test-runner-view" class="view">
     <div class="container">
