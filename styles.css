@@ -516,3 +516,49 @@ body {
   border-top-color: white;
   animation: spin 1s ease-in-out infinite;
 }
+
+/* Test Runner */
+#jasmine-container {
+  background-color: var(--surface);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px var(--shadow);
+  overflow-x: auto;
+}
+
+/* Override Jasmine default styles to fit our theme */
+#jasmine-container .jasmine-alert {
+  margin: 12px 0;
+}
+
+#jasmine-container .jasmine-bar {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#jasmine-container .jasmine-passed {
+  color: var(--success-color);
+}
+
+#jasmine-container .jasmine-failed {
+  color: var(--danger-color);
+}
+
+#jasmine-container .jasmine-spec-detail {
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 4px;
+  background-color: var(--background);
+}
+
+#jasmine-container .jasmine-description {
+  font-weight: 500;
+}
+
+/* Make test runner mobile-friendly */
+@media (max-width: 480px) {
+  #jasmine-container {
+    padding: 12px;
+    font-size: 14px;
+  }
+}

@@ -122,6 +122,13 @@ class ShangriLaApp {
       this.updateStorageModeUI();
     });
 
+    // Settings - run tests
+    const runTestsBtn = document.getElementById('run-tests-btn');
+    runTestsBtn?.addEventListener('click', () => {
+      settingsPanel?.classList.remove('active');
+      this.showTestRunnerView();
+    });
+
     // Settings - logout
     const logoutBtn = document.getElementById('logout-btn');
     logoutBtn?.addEventListener('click', () => {
@@ -179,6 +186,21 @@ class ShangriLaApp {
     const closeSecretBtn = document.getElementById('close-secret-view');
     closeSecretBtn?.addEventListener('click', () => {
       this.showSecretsListView();
+    });
+
+    // Test runner buttons
+    const runTestsActionBtn = document.getElementById('run-tests-action-btn');
+    runTestsActionBtn?.addEventListener('click', () => {
+      this.runTests();
+    });
+
+    const closeTestViewBtn = document.getElementById('close-test-view');
+    closeTestViewBtn?.addEventListener('click', () => {
+      if (this.auth.isLoggedIn()) {
+        this.showSecretsListView();
+      } else {
+        this.showLoginView();
+      }
     });
   }
 
@@ -643,6 +665,40 @@ class ShangriLaApp {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  /**
+   * Show test runner view
+   */
+  private showTestRunnerView(): void {
+    this.hideAllViews();
+    const testView = document.getElementById('test-runner-view');
+    testView?.classList.add('active');
+
+    // Show hamburger menu and add button in case user wants to navigate away
+    const hamburger = document.getElementById('hamburger-menu');
+    if (hamburger) hamburger.style.display = 'block';
+
+    const addBtn = document.getElementById('add-secret-btn');
+    if (addBtn) addBtn.style.display = this.auth.isLoggedIn() ? 'flex' : 'none';
+  }
+
+  /**
+   * Run tests
+   */
+  private runTests(): void {
+    // Clear the container first
+    const container = document.getElementById('jasmine-container');
+    if (container) {
+      container.innerHTML = '';
+    }
+
+    // Run tests if available
+    if (typeof (window as any).runShangriLaTests === 'function') {
+      (window as any).runShangriLaTests();
+    } else {
+      console.error('Test runner not loaded');
+    }
   }
 }
 
