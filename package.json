@@ -1,0 +1,13 @@
+{
+  "name": "shangri-la",
+  "version": "1.0.0",
+  "description": "A simple, secure secrets manager",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {}
+}

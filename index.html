@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Shangri-la - Secure Secrets Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header id="app-header">
+    <button id="hamburger-menu" class="icon-btn" aria-label="Menu">☰</button>
+    <h1 class="app-title">Shangri-la</h1>
+    <button id="add-secret-btn" class="icon-btn" aria-label="Add Secret">+</button>
+  </header>
+
+  <!-- Settings Panel -->
+  <div id="settings-panel" class="settings-panel">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <button id="close-settings" class="icon-btn">×</button>
+    </div>
+    <div class="settings-content">
+      <div class="settings-section">
+        <h3>Storage Mode</h3>
+        <div class="button-group">
+          <button id="local-mode-btn" class="mode-btn active">Local</button>
+          <button id="online-mode-btn" class="mode-btn">Online</button>
+        </div>
+        <p class="settings-description">
+          Local mode stores secrets in your browser's storage. Online mode uses Firestore cloud storage.
+        </p>
+        <div id="mock-firestore-warning" class="warning-box" style="display: none;">
+          ⚠️ Using mock Firestore (localStorage-based). Real Firestore is not configured.
+        </div>
+      </div>
+      <div class="settings-section">
+        <button id="logout-btn" class="btn btn-secondary">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login View -->
+  <div id="login-view" class="view active">
+    <div class="container">
+      <div class="logo">🔐</div>
+      <h2>Welcome to Shangri-la</h2>
+      <p class="subtitle">Your secure secrets manager</p>
+
+      <form id="login-form" class="form">
+        <div class="form-group">
+          <label for="user-id">User ID</label>
+          <input
+            type="text"
+            id="user-id"
+            name="user-id"
+            placeholder="Enter your user ID"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="master-password">Master Password</label>
+          <input
+            type="password"
+            id="master-password"
+            name="master-password"
+            placeholder="Enter your master password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <div id="login-error" class="error-message"></div>
+
+        <button type="submit" class="btn btn-primary">Login / Register</button>
+
+        <p class="info-text">
+          New users will be automatically registered with the provided credentials.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Secrets List View -->
+  <div id="secrets-list-view" class="view">
+    <div class="container">
+      <div id="secrets-container" class="secrets-list">
+        <!-- Secrets will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Secret View -->
+  <div id="add-secret-view" class="view">
+    <div class="container">
+      <h2>Add New Secret</h2>
+
+      <form id="add-secret-form" class="form">
+        <div class="form-group">
+          <label for="secret-description">Description</label>
+          <input
+            type="text"
+            id="secret-description"
+            name="secret-description"
+            placeholder="e.g., Bank PIN, WiFi Password"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="secret-text">Secret</label>
+          <textarea
+            id="secret-text"
+            name="secret-text"
+            placeholder="Enter your secret"
+            rows="4"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="secret-password">Password</label>
+          <input
+            type="password"
+            id="secret-password"
+            name="secret-password"
+            placeholder="Password to encrypt this secret"
+            autocomplete="new-password"
+            required
+          >
+          <p class="help-text">This password will be required to view the secret later.</p>
+        </div>
+
+        <div id="add-secret-error" class="error-message"></div>
+
+        <div class="button-group">
+          <button type="button" id="cancel-add-secret" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Secret</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Secret Prompt -->
+  <div id="view-secret-prompt" class="view">
+    <div class="container">
+      <h2>Enter Password</h2>
+      <p class="subtitle">Enter the password to decrypt this secret</p>
+
+      <form id="view-secret-form" class="form">
+        <div class="form-group">
+          <label for="view-password">Password</label>
+          <input
+            type="password"
+            id="view-password"
+            name="view-password"
+            placeholder="Enter password"
+            autocomplete="off"
+            required
+          >
+        </div>
+
+        <div id="view-secret-error" class="error-message"></div>
+
+        <div class="button-group">
+          <button type="button" id="cancel-view-secret" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Unlock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Secret Display View -->
+  <div id="secret-display-view" class="view">
+    <div class="container">
+      <h2 id="secret-display-title">Secret</h2>
+
+      <div class="secret-display">
+        <pre id="secret-display-text"></pre>
+      </div>
+
+      <div class="button-group">
+        <button id="copy-secret-btn" class="btn btn-primary">Copy to Clipboard</button>
+        <button id="close-secret-view" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load compiled JavaScript (ES modules) -->
+  <script type="module" src="dist/app.js"></script>
+</body>
+</html>

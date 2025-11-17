@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Node.js / JavaScript / TypeScript
+node_modules/
+package-lock.json
+*.log
+.DS_Store
