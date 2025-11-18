@@ -39,6 +39,23 @@
         </div>
       </div>
       <div class="settings-section">
+        <h3>Biometric Authentication</h3>
+        <div id="webauthn-not-available" style="display: none;">
+          <p class="settings-description">Biometric authentication is not available on this device.</p>
+        </div>
+        <div id="webauthn-available" style="display: none;">
+          <div id="webauthn-enrolled" style="display: none;">
+            <p class="settings-description">Fingerprint/Face ID is enabled for quick unlock.</p>
+            <div id="credentials-list"></div>
+            <button id="remove-webauthn-btn" class="btn btn-secondary">Remove Biometric Login</button>
+          </div>
+          <div id="webauthn-not-enrolled" style="display: none;">
+            <p class="settings-description">Enable fingerprint or Face ID for quick unlock on this device.</p>
+            <button id="enroll-webauthn-btn" class="btn btn-secondary">Enable Biometric Login</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
         <h3>Testing</h3>
         <button id="run-tests-btn" class="btn btn-secondary">Run Tests</button>
       </div>
@@ -83,6 +100,15 @@
         <div id="login-error" class="error-message"></div>
 
         <button type="submit" class="btn btn-primary">Login / Register</button>
+
+        <div id="webauthn-login-section" style="display: none; margin-top: 20px;">
+          <div style="text-align: center; margin: 16px 0; color: var(--text-secondary);">
+            <span>or</span>
+          </div>
+          <button type="button" id="webauthn-login-btn" class="btn btn-secondary">
+            🔐 Login with Fingerprint/Face ID
+          </button>
+        </div>
 
         <p class="info-text">
           New users will be automatically registered with the provided credentials.

@@ -562,3 +562,13 @@ body {
     font-size: 14px;
   }
 }
+
+/* WebAuthn Credentials */
+.credential-item {
+  background-color: var(--background);
+  padding: 12px;
+  border-radius: 4px;
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
