@@ -42,6 +42,10 @@ function configureJasmine() {
 }
 
 /**
+ * Define all test suites
+ */
+function defineTests() {
+/**
  * Crypto module tests
  */
 describe('Crypto Module', () => {
@@ -654,10 +658,12 @@ describe('Storage Implementations', () => {
     });
   });
 });
+}
 
 // Export a function to run tests
 export function runTests() {
   configureJasmine();
+  defineTests();
   jasmine.getEnv().execute();
 }
 
