@@ -50,6 +50,9 @@ class ShangriLaApp {
     // Set up event listeners
     this.setupEventListeners();
 
+    // Check WebAuthn availability
+    await this.checkWebAuthnAvailability();
+
     // Check if we have a shared secret URL
     this.handleUrlRouting();
   }
@@ -146,6 +149,18 @@ class ShangriLaApp {
       this.updateStorageModeUI();
     });
 
+    // Settings - WebAuthn enroll
+    const enrollWebAuthnBtn = document.getElementById('enroll-webauthn-btn');
+    enrollWebAuthnBtn?.addEventListener('click', async () => {
+      await this.enrollWebAuthn();
+    });
+
+    // Settings - WebAuthn remove
+    const removeWebAuthnBtn = document.getElementById('remove-webauthn-btn');
+    removeWebAuthnBtn?.addEventListener('click', () => {
+      this.removeWebAuthn();
+    });
+
     // Settings - run tests
     const runTestsBtn = document.getElementById('run-tests-btn');
     runTestsBtn?.addEventListener('click', () => {
@@ -166,6 +181,18 @@ class ShangriLaApp {
     loginForm?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.handleLogin();
+    });
+
+    // User ID input - check for WebAuthn credentials
+    const userIdInput = document.getElementById('user-id');
+    userIdInput?.addEventListener('input', () => {
+      this.updateWebAuthnLoginButton();
+    });
+
+    // WebAuthn login button
+    const webauthnLoginBtn = document.getElementById('webauthn-login-btn');
+    webauthnLoginBtn?.addEventListener('click', async () => {
+      await this.handleWebAuthnLogin();
     });
 
     // Add secret button
@@ -374,6 +401,9 @@ class ShangriLaApp {
 
     // Update storage mode UI
     this.updateStorageModeUI();
+
+    // Update WebAuthn settings UI
+    this.updateWebAuthnSettingsUI();
 
     // Load and display secrets
     await this.loadSecretsList();
@@ -768,6 +798,136 @@ class ShangriLaApp {
     } else {
       console.error('Test runner not loaded');
     }
+  }
+
+  /**
+   * Check WebAuthn availability and update UI
+   */
+  private async checkWebAuthnAvailability(): Promise<void> {
+    const available = await this.auth.isWebAuthnAvailable();
+
+    const notAvailableDiv = document.getElementById('webauthn-not-available');
+    const availableDiv = document.getElementById('webauthn-available');
+
+    if (available) {
+      if (notAvailableDiv) notAvailableDiv.style.display = 'none';
+      if (availableDiv) availableDiv.style.display = 'block';
+    } else {
+      if (notAvailableDiv) notAvailableDiv.style.display = 'block';
+      if (availableDiv) availableDiv.style.display = 'none';
+    }
+  }
+
+  /**
+   * Update WebAuthn settings UI
+   */
+  private updateWebAuthnSettingsUI(): void {
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) return;
+
+    const hasCredentials = this.auth.hasWebAuthnCredentials(userId);
+    const enrolledDiv = document.getElementById('webauthn-enrolled');
+    const notEnrolledDiv = document.getElementById('webauthn-not-enrolled');
+    const credentialsList = document.getElementById('credentials-list');
+
+    if (hasCredentials) {
+      if (enrolledDiv) enrolledDiv.style.display = 'block';
+      if (notEnrolledDiv) notEnrolledDiv.style.display = 'none';
+
+      // Show credentials
+      if (credentialsList) {
+        const credentials = this.auth.getWebAuthnCredentials(userId);
+        credentialsList.innerHTML = credentials.map(cred => `
+          <div class="credential-item">
+            <span>${cred.deviceName} (${new Date(cred.createdAt).toLocaleDateString()})</span>
+          </div>
+        `).join('');
+      }
+    } else {
+      if (enrolledDiv) enrolledDiv.style.display = 'none';
+      if (notEnrolledDiv) notEnrolledDiv.style.display = 'block';
+    }
+  }
+
+  /**
+   * Update WebAuthn login button visibility
+   */
+  private updateWebAuthnLoginButton(): void {
+    const userIdInput = document.getElementById('user-id') as HTMLInputElement;
+    const webauthnSection = document.getElementById('webauthn-login-section');
+
+    if (!userIdInput || !webauthnSection) return;
+
+    const userId = userIdInput.value.trim();
+
+    if (userId && this.auth.hasWebAuthnCredentials(userId)) {
+      webauthnSection.style.display = 'block';
+    } else {
+      webauthnSection.style.display = 'none';
+    }
+  }
+
+  /**
+   * Handle WebAuthn login
+   */
+  private async handleWebAuthnLogin(): Promise<void> {
+    const userIdInput = document.getElementById('user-id') as HTMLInputElement;
+    const errorMsg = document.getElementById('login-error');
+
+    const userId = userIdInput.value.trim();
+
+    if (!userId) {
+      this.showError(errorMsg, 'Please enter your user ID');
+      return;
+    }
+
+    try {
+      const success = await this.auth.loginWithWebAuthn(userId);
+      if (success) {
+        this.showSecretsListView();
+      } else {
+        this.showError(errorMsg, 'Biometric authentication failed');
+      }
+    } catch (error: any) {
+      this.showError(errorMsg, error.message || 'Authentication failed');
+      console.error(error);
+    }
+  }
+
+  /**
+   * Enroll WebAuthn credential
+   */
+  private async enrollWebAuthn(): Promise<void> {
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) return;
+
+    try {
+      await this.auth.registerWebAuthnCredential(userId);
+      this.updateWebAuthnSettingsUI();
+      alert('Biometric login enabled successfully!');
+    } catch (error: any) {
+      alert(`Failed to enable biometric login: ${error.message}`);
+      console.error(error);
+    }
+  }
+
+  /**
+   * Remove WebAuthn credential
+   */
+  private removeWebAuthn(): void {
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) return;
+
+    if (!confirm('Are you sure you want to remove biometric login?')) {
+      return;
+    }
+
+    const credentials = this.auth.getWebAuthnCredentials(userId);
+    credentials.forEach(cred => {
+      this.auth.deleteWebAuthnCredential(userId, cred.credentialId);
+    });
+
+    this.updateWebAuthnSettingsUI();
   }
 
   /**
