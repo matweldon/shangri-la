@@ -572,3 +572,59 @@ body {
   font-size: 14px;
   color: var(--text-secondary);
 }
+
+/* Shared Secrets */
+.form-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: inherit;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  transition: border-color 0.2s;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.link-display {
+  display: flex;
+  gap: 8px;
+}
+
+.link-input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: monospace;
+  background-color: var(--background);
+}
+
+.share-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.share-btn:hover {
+  background-color: rgba(74, 144, 226, 0.1);
+}
+
+.share-btn:active {
+  background-color: rgba(74, 144, 226, 0.2);
+}

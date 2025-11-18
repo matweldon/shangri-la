@@ -40,3 +40,20 @@ export interface DecryptedSecret {
  * Storage mode
  */
 export type StorageMode = 'local' | 'online';
+
+/**
+ * Shared secret stored in Firestore
+ * Single-use or time-limited secret that can be shared with others
+ */
+export interface SharedSecret {
+  id: string;
+  description: string;
+  ciphertext: string;
+  iv: string;
+  salt: string;
+  createdAt: number;
+  createdBy?: string;
+  expiresAt: number;
+  viewCount: number;
+  maxViews: number;
+}

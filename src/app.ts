@@ -9,23 +9,29 @@ import { FirestoreImpl, MockFirestoreImpl } from './firestoreImpl.js';
 import { AuthService } from './auth.js';
 import { SecretsService } from './secrets.js';
 import { EncryptedSecret } from './types.js';
+import { SharedSecretsService, MockSharedSecretsStorage, FirestoreSharedSecretsStorage } from './sharedSecrets.js';
 
 class ShangriLaApp {
   private storage: IStorage;
   private auth: AuthService;
   private secrets: SecretsService;
+  private sharedSecrets: SharedSecretsService;
   private storageMode: 'local' | 'online' = 'local';
   private useMockFirestore: boolean = true;
 
   // UI State
   private draggedElement: HTMLElement | null = null;
   private draggedSecretId: string | null = null;
+  private currentSharedSecretPassword: string = ''; // Store password for share result view
 
   constructor() {
     // Initialize with local storage by default
     this.storage = new LocalStorageImpl();
     this.auth = new AuthService(this.storage);
     this.secrets = new SecretsService(this.storage);
+
+    // Initialize shared secrets with mock storage
+    this.sharedSecrets = new SharedSecretsService(new MockSharedSecretsStorage());
   }
 
   /**
@@ -47,7 +53,25 @@ class ShangriLaApp {
     // Check WebAuthn availability
     await this.checkWebAuthnAvailability();
 
-    // Show appropriate view
+    // Check if we have a shared secret URL
+    this.handleUrlRouting();
+  }
+
+  /**
+   * Handle URL routing for shared secrets
+   */
+  private handleUrlRouting(): void {
+    const hash = window.location.hash;
+
+    if (hash.startsWith('#share/')) {
+      const secretId = hash.substring(7); // Remove '#share/'
+      if (secretId) {
+        this.showViewSharedSecretView(secretId);
+        return;
+      }
+    }
+
+    // Default to login view
     this.showLoginView();
   }
 
@@ -229,6 +253,44 @@ class ShangriLaApp {
         this.showLoginView();
       }
     });
+
+    // Share secret form
+    const shareSecretForm = document.getElementById('share-secret-form');
+    shareSecretForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleShareSecret();
+    });
+
+    // Cancel share secret
+    const cancelShareBtn = document.getElementById('cancel-share-secret');
+    cancelShareBtn?.addEventListener('click', () => {
+      this.showSecretsListView();
+    });
+
+    // Copy link button
+    const copyLinkBtn = document.getElementById('copy-link-btn');
+    copyLinkBtn?.addEventListener('click', () => {
+      this.copyToClipboard('share-link', copyLinkBtn);
+    });
+
+    // Copy password button
+    const copyPasswordBtn = document.getElementById('copy-password-btn');
+    copyPasswordBtn?.addEventListener('click', () => {
+      this.copyToClipboard('share-link-password', copyPasswordBtn);
+    });
+
+    // Close share result
+    const closeShareResult = document.getElementById('close-share-result');
+    closeShareResult?.addEventListener('click', () => {
+      this.showSecretsListView();
+    });
+
+    // View shared secret form
+    const viewSharedSecretForm = document.getElementById('view-shared-secret-form');
+    viewSharedSecretForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleViewSharedSecret();
+    });
   }
 
   /**
@@ -388,15 +450,22 @@ class ShangriLaApp {
       item.innerHTML = `
         <div class="drag-handle">☰</div>
         <div class="secret-description">${this.escapeHtml(secret.description)}</div>
+        <button class="share-btn" data-secret-id="${secret.id}" title="Share this secret">⤴</button>
         <button class="delete-btn" data-secret-id="${secret.id}">×</button>
       `;
 
       // Add event listeners
       item.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
-        if (!target.classList.contains('delete-btn')) {
+        if (!target.classList.contains('delete-btn') && !target.classList.contains('share-btn')) {
           this.showViewSecretPrompt(secret);
         }
+      });
+
+      const shareBtn = item.querySelector('.share-btn');
+      shareBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.showShareSecretView();
       });
 
       const deleteBtn = item.querySelector('.delete-btn');
@@ -859,6 +928,176 @@ class ShangriLaApp {
     });
 
     this.updateWebAuthnSettingsUI();
+  }
+
+  /**
+   * Show share secret view
+   */
+  private showShareSecretView(): void {
+    this.hideAllViews();
+    const shareView = document.getElementById('share-secret-view');
+    shareView?.classList.add('active');
+
+    // Clear form
+    const descInput = document.getElementById('share-description') as HTMLInputElement;
+    const secretInput = document.getElementById('share-secret-text') as HTMLTextAreaElement;
+    const passwordInput = document.getElementById('share-password') as HTMLInputElement;
+    if (descInput) descInput.value = '';
+    if (secretInput) secretInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+
+    // Hide error
+    const errorMsg = document.getElementById('share-secret-error');
+    if (errorMsg) errorMsg.style.display = 'none';
+  }
+
+  /**
+   * Handle share secret submission
+   */
+  private async handleShareSecret(): Promise<void> {
+    const descInput = document.getElementById('share-description') as HTMLInputElement;
+    const secretInput = document.getElementById('share-secret-text') as HTMLTextAreaElement;
+    const passwordInput = document.getElementById('share-password') as HTMLInputElement;
+    const expirySelect = document.getElementById('share-expiry') as HTMLSelectElement;
+    const maxViewsSelect = document.getElementById('share-max-views') as HTMLSelectElement;
+    const errorMsg = document.getElementById('share-secret-error');
+
+    const description = descInput.value.trim();
+    const secret = secretInput.value;
+    const password = passwordInput.value;
+    const expiryHours = parseInt(expirySelect.value);
+    const maxViews = parseInt(maxViewsSelect.value);
+
+    if (!description || !secret || !password) {
+      this.showError(errorMsg, 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      const userId = this.auth.getCurrentUserId();
+      const result = await this.sharedSecrets.createSharedSecret(
+        description,
+        secret,
+        password,
+        expiryHours,
+        maxViews,
+        userId || undefined
+      );
+
+      // Store password for display
+      this.currentSharedSecretPassword = password;
+
+      // Show result view
+      this.showShareSecretResultView(result.link);
+    } catch (error: any) {
+      this.showError(errorMsg, error.message || 'Failed to create shared secret');
+      console.error(error);
+    }
+  }
+
+  /**
+   * Show share secret result view
+   */
+  private showShareSecretResultView(link: string): void {
+    this.hideAllViews();
+    const resultView = document.getElementById('share-secret-result-view');
+    resultView?.classList.add('active');
+
+    // Set link and password
+    const linkInput = document.getElementById('share-link') as HTMLInputElement;
+    const passwordInput = document.getElementById('share-link-password') as HTMLInputElement;
+
+    if (linkInput) linkInput.value = link;
+    if (passwordInput) passwordInput.value = this.currentSharedSecretPassword;
+  }
+
+  /**
+   * Show view shared secret view
+   */
+  private showViewSharedSecretView(secretId: string): void {
+    this.hideAllViews();
+    const viewSharedView = document.getElementById('view-shared-secret-view');
+    viewSharedView?.classList.add('active');
+    viewSharedView?.setAttribute('data-secret-id', secretId);
+
+    // Clear password input
+    const passwordInput = document.getElementById('shared-secret-password') as HTMLInputElement;
+    if (passwordInput) passwordInput.value = '';
+
+    // Hide error
+    const errorMsg = document.getElementById('view-shared-secret-error');
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    // Hide hamburger menu and add button
+    const hamburger = document.getElementById('hamburger-menu');
+    if (hamburger) hamburger.style.display = 'none';
+
+    const addBtn = document.getElementById('add-secret-btn');
+    if (addBtn) addBtn.style.display = 'none';
+  }
+
+  /**
+   * Handle view shared secret submission
+   */
+  private async handleViewSharedSecret(): Promise<void> {
+    const viewSharedView = document.getElementById('view-shared-secret-view');
+    const secretId = viewSharedView?.getAttribute('data-secret-id');
+    const passwordInput = document.getElementById('shared-secret-password') as HTMLInputElement;
+    const errorMsg = document.getElementById('view-shared-secret-error');
+
+    const password = passwordInput.value;
+
+    if (!password) {
+      this.showError(errorMsg, 'Please enter the password');
+      return;
+    }
+
+    if (!secretId) {
+      this.showError(errorMsg, 'Invalid secret link');
+      return;
+    }
+
+    try {
+      const result = await this.sharedSecrets.retrieveSharedSecret(secretId, password);
+
+      if (!result) {
+        this.showError(
+          errorMsg,
+          'Failed to decrypt secret. The password may be incorrect, or the secret may have expired or been viewed too many times.'
+        );
+        return;
+      }
+
+      // Show the decrypted secret
+      this.showDecryptedSecret(result.secret, result.description);
+
+      // Clear the hash
+      window.location.hash = '';
+    } catch (error: any) {
+      this.showError(errorMsg, error.message || 'Failed to retrieve secret');
+      console.error(error);
+    }
+  }
+
+  /**
+   * Copy text to clipboard from an input element
+   */
+  private async copyToClipboard(inputId: string, button: HTMLElement): Promise<void> {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    if (!input) return;
+
+    const text = input.value;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      const originalText = button.textContent;
+      button.textContent = '✓ Copied';
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
   }
 }
 
